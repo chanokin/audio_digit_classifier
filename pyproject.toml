@@ -1,0 +1,46 @@
+[project]
+
+name = "scd"
+
+version = "2024.0.0"
+
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "torch",
+    "torchaudio",
+    "lightning",
+    "mlflow",
+    "torchfsdd @ git://github.com/chanokin/torch-fsdd",
+]
+
+#requires-python = ">=3.8"
+
+authors = [
+    { name = "Garibaldi Pineda Garcia", email = "chanokin@gmail.com" },
+]
+
+maintainers = [
+    { name = "Garibaldi Pineda Garcia", email = "chanokin@gmail.com" },
+
+]
+
+description = """
+Audio digit classifier based on the FSDD dataset using RNNs.
+
+"""
+
+readme = "README.md"
+
+
+[project.urls]
+homepage = "https://github.com/chanokin/audio_digit_classifier"
+
+# [tool.setuptools]
+# license-files = [
+#   "LICENSE"
+# ]
+
+
+[tool.setuptools.packages]
+find = {}
