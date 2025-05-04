@@ -10,6 +10,9 @@ class RNNTrainer(pl.LightningModule):
         self.loss_fn = self._init_loss_fn(loss_fn)
         self.optimizer = optimizer
         self.accuracy = Accuracy("multiclass", num_classes=model.n_classes)
+        self.train_accuracy = Accuracy("multiclass", num_classes=model.n_classes)
+        self.val_acc = 0
+        self.train_acc = 0
 
     def _init_loss_fn(self, loss_fn: str):
         if loss_fn == 'crossentropy':
@@ -23,14 +26,14 @@ class RNNTrainer(pl.LightningModule):
         return self.model(x)
 
     def training_step(self, batch, batch_idx):
-        print(f"Training step {batch_idx}")
-
         x, y = batch
-        print(f"Batch x shape: {x.shape}")
-        print(f"Batch y shape: {y.shape}")
 
         y_hat = self(x)
         loss = self.loss_fn(y_hat, y)
+        self.train_acc = self.train_accuracy(y_hat, y)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log("train_acc", self.train_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+
         return loss
 
     def configure_optimizers(self):
@@ -42,15 +45,13 @@ class RNNTrainer(pl.LightningModule):
             raise ValueError(f"Unknown optimizer: {self.optimizer}")
 
     def validation_step(self, batch, batch_idx):
-        print(f"Training step {batch_idx}")
-
         x, y = batch
-        print(f"Batch x shape: {x.shape}")
-        print(f"Batch y shape: {y.shape}")
 
         y_hat = self(x)
         loss = self.loss_fn(y_hat, y)
-        self.log('val_loss', loss)
-        self.log('val_acc', self.accuracy(y_hat, y))
+        self.val_acc = self.accuracy(y_hat, y)
+        self.log("val_loss", loss, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log("val_acc", self.val_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+
 
         return loss

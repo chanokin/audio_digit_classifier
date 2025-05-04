@@ -59,10 +59,8 @@ class RNN(torch.nn.Module):
         # x: (batch_size, seq_len, mfcc_size, frames)
         x = pad_sequence(x, batch_first=True)
 
-        _, (hn, _) = self.lstm(x)
-        # x: (batch_size, seq_len, hidden_size * num_directions)
-        x = hn[-1, ...]
-        # x: (batch_size, hidden_size * num_directions)
+        x, _ = self.lstm(x)
+        x = x[:, -1, :] # take the last output of the LSTM
         for i in range(len(self.linear_layers)):
             x = getattr(self, self._linear_name(i))(x)
 

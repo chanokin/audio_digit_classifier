@@ -176,3 +176,4 @@ cython_debug/
 # data
 notebooks/recordings/
 notebooks/mlruns/
+notebooks/saved_models/

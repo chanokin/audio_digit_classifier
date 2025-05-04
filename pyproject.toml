@@ -11,6 +11,8 @@ dependencies = [
     "torchaudio",
     "lightning",
     "mlflow",
+    "rich",
+    "ipywidgets",
     "torchfsdd @ git://github.com/chanokin/torch-fsdd",
 ]
 
