@@ -14,6 +14,7 @@ dependencies = [
     "rich",
     "ipywidgets",
     "torchfsdd @ git://github.com/chanokin/torch-fsdd",
+    "brevitas",
 ]
 
 #requires-python = ">=3.8"

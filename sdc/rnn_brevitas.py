@@ -1,12 +1,14 @@
 import torch
 from copy import deepcopy
 from torch.nn.utils.rnn import pad_sequence
+from brevitas.nn import QuantLinear, QuantLSTM, QuantReLU
+from brevitas.quant import Int8WeightPerTensorFixedPoint
 
 class LSD(torch.nn.Module):
     def __init__(self, input_size: int, output_size: int, dropout: float = 0.3):
         super().__init__()
-        self.linear = torch.nn.Linear(input_size, output_size)
-        self.act = torch.nn.SiLU()
+        self.linear = QuantLinear(input_size, output_size, weight_quant=Int8WeightPerTensorFixedPoint, weight_bit_width=8,)
+        self.act = QuantReLU()
         self.dropout = torch.nn.Dropout(dropout)
 
     def forward(self, x):
@@ -32,16 +34,16 @@ class RNN(torch.nn.Module):
         self.lstm_config.update(lstm_config)
         self.linear_sizes = [self.lstm_config['hidden_size']] + linear_sizes
 
-        # the lstm input is a sequence of MFCC frames
-        # x: (batch_size, seq_len, mfcc_size)
 
-        self.lstm = torch.nn.LSTM(
+        self.lstm = QuantLSTM(
             input_size=self.lstm_config['input_size'],
             hidden_size=self.lstm_config['hidden_size'],
             num_layers=self.lstm_config['num_layers'],
             dropout=self.lstm_config['dropout'],
             bidirectional=self.lstm_config['bidirectional'],
             batch_first=True,
+            weight_quant=Int8WeightPerTensorFixedPoint,
+            weight_bit_width=8,
         )
 
         self.n_classes = linear_sizes[-1]
@@ -58,8 +60,7 @@ class RNN(torch.nn.Module):
         return f'linear_{i:03d}'
 
     def forward(self, x):
-        # x: (batch_size, seq_len, mfcc_size)
-        # we need to pad the sequences to the same length
+        # x: (batch_size, seq_len, mfcc_size, frames)
         x = pad_sequence(x, batch_first=True)
 
         x, _ = self.lstm(x)

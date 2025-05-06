@@ -1,16 +1,25 @@
 import torch
 from copy import deepcopy
 from torch.nn.utils.rnn import pad_sequence
+from torch.quantization import DeQuantStub, QuantStub
 
 class LSD(torch.nn.Module):
     def __init__(self, input_size: int, output_size: int, dropout: float = 0.3):
         super().__init__()
         self.linear = torch.nn.Linear(input_size, output_size)
-        self.act = torch.nn.SiLU()
+        self.act = torch.nn.ReLU()
         self.dropout = torch.nn.Dropout(dropout)
+        self.quant = QuantStub()
+        self.dequant = DeQuantStub()
 
     def forward(self, x):
-        return self.dropout(self.act(self.linear(x)))
+        x = self.quant(x)
+        x = self.linear(x)
+        x = self.dequant(x)
+        x = self.act(x)
+        x = self.dropout(x)
+        return x
+        # return self.dropout(self.act(self.linear(x)))
 
 
 class RNN(torch.nn.Module):
@@ -28,12 +37,13 @@ class RNN(torch.nn.Module):
         assert len(linear_sizes) > 0, "linear_sizes must contain at least one element"
 
         super().__init__()
+        self.quant = QuantStub()
+        self.dequant = DeQuantStub()
+
         self.lstm_config = deepcopy(RNN.default_lstm_config)
         self.lstm_config.update(lstm_config)
         self.linear_sizes = [self.lstm_config['hidden_size']] + linear_sizes
 
-        # the lstm input is a sequence of MFCC frames
-        # x: (batch_size, seq_len, mfcc_size)
 
         self.lstm = torch.nn.LSTM(
             input_size=self.lstm_config['input_size'],
@@ -58,11 +68,12 @@ class RNN(torch.nn.Module):
         return f'linear_{i:03d}'
 
     def forward(self, x):
-        # x: (batch_size, seq_len, mfcc_size)
-        # we need to pad the sequences to the same length
+        # x: (batch_size, seq_len, mfcc_size, frames)
         x = pad_sequence(x, batch_first=True)
-
+        x = self.quant(x)
         x, _ = self.lstm(x)
+        x = self.dequant(x)
+
         x = x[:, -1, :] # take the last output of the LSTM
         for i in range(len(self.linear_layers)):
             x = getattr(self, self._linear_name(i))(x)

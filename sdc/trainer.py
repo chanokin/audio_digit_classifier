@@ -54,4 +54,4 @@ class RNNTrainer(pl.LightningModule):
         self.log("val_acc", self.val_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
 
-        return loss
+        return {'loss': loss, 'accuracy': self.val_acc}
