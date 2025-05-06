@@ -177,3 +177,4 @@ cython_debug/
 notebooks/recordings/
 notebooks/mlruns/
 notebooks/saved_models/
+notebooks/nc_workspace/

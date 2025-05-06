@@ -60,7 +60,12 @@ class RNN(torch.nn.Module):
 
         self.linear_layers = []
         for i in range(len(self.linear_sizes) - 1):
-            layer = LSD(self.linear_sizes[i], self.linear_sizes[i + 1])
+            if i == len(self.linear_sizes) - 2:
+                # the last layer is a linear layer without activation
+                layer = LSD(self.linear_sizes[i], self.linear_sizes[i + 1], dropout=0.0)
+            else:
+                layer = LSD(self.linear_sizes[i], self.linear_sizes[i + 1])
+
             self.linear_layers.append(layer)
             self.add_module(self._linear_name(i), layer)
 
