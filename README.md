@@ -16,6 +16,12 @@ As I had not worked with audio data directly, I searched the internet for prior 
 
 I split the data in train, validation and test subsets with a 70%, 15%, 15% proportion. All samples were transformed by trimming silences and the MFCC transform from the `torchaudio`library. Additionally, for the training data I added noisy via channel/step dropping; this was done with the purpose of enhancing the robustness of the network.
 
+After selecting these transforms (except for the noise) I did some exploration of the data. The tSNE of the raw audio training samples seems pretty hard to disentangle, while the same reduction for the MFCC representation seems to be locally clustered which should help in the training stage.
+Raw audio | MFCC
+:-------: | :--:
+![tsne of raw signals](images/tsne_of_raw.png) | ![tsne of raw signals](images/tsne_of_mfcc.png)
+
+
 ### Network architecture
 
 Throughout the work I used *PyTorch* for modelling and *Pytorch-Lightning* for training. The network is composed of:
@@ -62,12 +68,15 @@ Fortunatelly, there are libraries that do this particular quantization; in parti
 
 ### Conclusions
 
-|           | Baseline | Small | Pruned |  PTQ  | QAT Po2 |
-| --------- | -------- | ----- | ------ | ----- | ------- |
-| LSTM Size |   128    |  32   |   72   |   80  |    97   |
-| Accuracy  |    97    |  89   |   94   |   93  |    66   |
+Reducing the memory footprint of a neural network is crucial for real-time execution of these models. The two most common ways are to: prune (useless) and/or quantize connections. The former reduces the number of weights, however, it requires some connectivity information which could lead to little gains in terms of footprint reduction. The latter discretizes the weights values and (sometimes) activation functions.
+The following table summarizes the different size reduction experiments.
+
+|           | Baseline | Small | Small 80 | Pruned |  PTQ  | QAT Po2 |
+| :-------- | :------: | :---: | :------: | :----: | :---: | :-----: |
+| LSTM Size |   128    |  32   |    80    |   72   |   80  |    80   |
+| Size (KB) |  297.6   | 25.2  |   124.8  |  31.2  |  30.5 |   30.2  |
+| Accuracy  |    97    |  89   |    95    |   94   |   93  |    66   |
 
 
-Reducing the memory footprint of a neural network is crucial for real-time execution of these models. The two most common ways are to: prune (useless) and/or quantize connections. The former reduces the number of weights, however, it requires some connectivity information which could lead to little gains in terms of footprint reduction. The latter further discretizes the weights values so that
 
-To improve the performance of the QAT power-of-two I could transfer the weights from a float32 pre-trained network and then fine tune it.
+Prunning resulted in 65% reduction of parameters while almost no performance was dropped. I was surprised to see such little accuracy drop there was from post-training quantization. I was further surprised of how much performance the network lost by in the QAT + Po2  regime; I think that, to improve I could transfer the weights from a pre-trained network (with float parameters) and then fine tune it using QAT.
