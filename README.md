@@ -79,4 +79,4 @@ The following table summarizes the different size reduction experiments.
 
 
 
-Prunning resulted in 65% reduction of parameters while almost no performance was dropped. I was surprised to see such little accuracy drop there was from post-training quantization. I was further surprised of how much performance the network lost by in the QAT + Po2  regime; I think that, to improve accuracy, I could transfer the weights from a pre-trained network (with float parameters) and then fine tune it using QAT.
+Prunning resulted in 65% reduction of parameters while almost no performance was dropped. I was surprised to see such little accuracy drop there was from post-training quantization. I was further surprised of how much performance the network lost by in the QAT + Po2  regime; I think that, to improve accuracy, I could transfer the weights from a pre-trained network (with float parameters) and then fine tune it using QAT. I thought about normalizing the samples so that each has mean zero and unit variance; however, the performance of the network was suffiently good so I didn't try it.
