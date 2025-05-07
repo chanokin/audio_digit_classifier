@@ -64,6 +64,8 @@ class RNN(torch.nn.Module):
     def forward(self, x):
         # x: (batch_size, seq_len, mfcc_size)
         # we need to pad the sequences to the same length
+        # note: unfortunately, this breaks exporting to ONNX
+        # todo: move this outside the model
         x = pad_sequence(x, batch_first=True)
 
         x, _ = self.lstm(x)

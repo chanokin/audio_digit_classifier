@@ -80,3 +80,18 @@ The following table summarizes the different size reduction experiments.
 
 
 Prunning resulted in 65% reduction of parameters while almost no performance was dropped. I was surprised to see such little accuracy drop there was from post-training quantization. I was further surprised of how much performance the network lost by in the QAT + Po2  regime; I think that, to improve accuracy, I could transfer the weights from a pre-trained network (with float parameters) and then fine tune it using QAT. I thought about normalizing the samples so that each has mean zero and unit variance; however, the performance of the network was suffiently good so I didn't try it.
+
+
+### Repository contents:
+* `sdc` - Python sources:
+   * `rnn` Base pytorch network
+   * `rnn_brevitas` Quantizable network via brevitas
+   * `trainer` Lightning wrapper to make training easier
+* `notebooks` - Experiments on size reduction:
+   * `explore_data` Check how to use the dataset and its properties
+   * `training_base` Use LSTM with 128 hidden neurons
+   * `training_small` Use LSTM with different numbers of hidden neurons
+   * `training_prune` Find the smalles pruned network that fits the 35KB constraint
+   * `training_ptq` Post-training quantization (LSTM 80 neurons)
+   * `training_po2_qat` Quantization aware training for power-of-two parameters (native, LSTM 80 neurons)
+   * `training_po2_qat_brevitas` Quantization aware training for power-of-two parameters (brevitas, LSTM 80 neurons)
